@@ -12,7 +12,7 @@ namespace
     void cleanline(string& value)
     {
         while (!value.empty() &&
-            (value.back() == '\r' ||
+            (value.back() == '\n' ||
                 value.back() == ' ' ||
                 value.back() == '\t'))
         {
@@ -26,17 +26,13 @@ namespace
     /// @return Detected line kind.
     linekind classify(const string& line, int& marker)
     {
-        static const regex heading(
-            R"(^([ ]{0,3})(#{1,6})[ ]+(.+?)[ ]*#*[ ]*$)");
+        static const regex heading(R"(^([ ]{0,3})(#{1,6})[ ]+(.+?)[ ]*#*[ ]*$)");
 
-        static const regex bullet(
-            R"(^([ ]{0,3})([-+*])[ ]+(.+)$)");
+        static const regex bullet(R"(^([ ]{0,3})([-+*])[ ]+(.+)$)");
 
-        static const regex ordered(
-            R"(^([ ]{0,3})([0-9]+)[.)][ ]+(.+)$)");
+        static const regex ordered(R"(^([ ]{0,3})([0-9]+)[.)][ ]+(.+)$)");
 
-        static const regex fence(
-            R"(^[ ]{0,3}(`{3,}|~{3,})(.*)$)");
+        static const regex fence(R"(^[ ]{0,3}(`{3,}|~{3,})(.*)$)");
 
         marker = 0;
 
@@ -50,24 +46,21 @@ namespace
 
         if (regex_match(line, match, heading))
         {
-            marker = static_cast<int>(
-                match[2].str().size());
+            marker = static_cast<int>(match[2].str().size());
 
             return linekind::Heading;
         }
 
         if (regex_match(line, match, bullet))
         {
-            marker = static_cast<int>(
-                match[1].str().size());
+            marker = static_cast<int>(match[1].str().size());
 
             return linekind::Bullet;
         }
 
         if (regex_match(line, match, ordered))
         {
-            marker = static_cast<int>(
-                match[1].str().size());
+            marker = static_cast<int>(match[1].str().size());
 
             return linekind::Ordered;
         }
@@ -85,8 +78,7 @@ namespace
     /// @return True for bullet and ordered list items.
     bool islist(linekind kind)
     {
-        return kind == linekind::Bullet ||
-            kind == linekind::Ordered;
+        return kind == linekind::Bullet || kind == linekind::Ordered;
     }
 }
 
@@ -94,14 +86,6 @@ vector<dataline> readmd(const string& file)
 {
     ifstream input(file);
     vector<dataline> result;
-
-    if (!input.is_open())
-    {
-        cerr << "Cannot open Markdown file: "
-            << file << '\n';
-
-        return result;
-    }
 
     string value;
     int number = 1;
@@ -123,8 +107,7 @@ vector<dataline> readmd(const string& file)
         number++;
     }
 
-    cout << "Loaded lines: "
-        << result.size() << '\n';
+    cout << "Loaded lines: " << result.size() << '\n';
 
     return result;
 }
@@ -144,8 +127,7 @@ bool checkmd(const vector<dataline>& lines)
     {
         if (line.kind == linekind::Fence)
         {
-            size_t first =
-                line.value.find_first_not_of(' ');
+            size_t first = line.value.find_first_not_of(' ');
 
             if (first == string::npos)
             {
@@ -154,22 +136,17 @@ bool checkmd(const vector<dataline>& lines)
 
             char symbol = line.value[first];
 
-            size_t end =
-                line.value.find_first_not_of(
-                    symbol,
-                    first);
+            size_t end = line.value.find_first_not_of(symbol, first);
 
             int length;
 
             if (end == string::npos)
             {
-                length = static_cast<int>(
-                    line.value.size() - first);
+                length = static_cast<int>(line.value.size() - first);
             }
             else
             {
-                length = static_cast<int>(
-                    end - first);
+                length = static_cast<int>(end - first);
             }
 
             string rest;
@@ -190,19 +167,13 @@ bool checkmd(const vector<dataline>& lines)
             }
             else
             {
-                bool correctsymb =
-                    symbol == fencesymb;
+                bool correctsymb = symbol == fencesymb;
 
-                bool correctlength =
-                    length >= fencelength;
+                bool correctlength = length >= fencelength;
 
-                bool spaceonly =
-                    rest.find_first_not_of(' ') ==
-                    string::npos;
+                bool spaceonly = rest.find_first_not_of(' ') == string::npos;
 
-                if (correctsymb &&
-                    correctlength &&
-                    spaceonly)
+                if (correctsymb && correctlength && spaceonly)
                 {
                     infence = false;
                 }
@@ -230,11 +201,9 @@ bool checkmd(const vector<dataline>& lines)
                 activelist = line.kind;
                 depth = line.marker;
             }
-            else if (line.kind != activelist &&
-                line.marker <= depth)
+            else if (line.kind != activelist && line.marker <= depth)
             {
-                cerr << "List type changes at line "
-                    << line.number << '\n';
+                cerr << "List type changes at line " << line.number << '\n';
 
                 valid = false;
             }
@@ -285,8 +254,7 @@ vector<paragraph> findparag(const vector<dataline>& lines)
     {
         if (line.kind == linekind::Fence)
         {
-            size_t first =
-                line.value.find_first_not_of(' ');
+            size_t first = line.value.find_first_not_of(' ');
 
             if (first == string::npos)
             {
@@ -295,22 +263,17 @@ vector<paragraph> findparag(const vector<dataline>& lines)
 
             char symbol = line.value[first];
 
-            size_t end =
-                line.value.find_first_not_of(
-                    symbol,
-                    first);
+            size_t end = line.value.find_first_not_of(symbol, first);
 
             int length;
 
             if (end == string::npos)
             {
-                length = static_cast<int>(
-                    line.value.size() - first);
+                length = static_cast<int>(line.value.size() - first);
             }
             else
             {
-                length = static_cast<int>(
-                    end - first);
+                length = static_cast<int>(end - first);
             }
 
             string rest;
@@ -392,8 +355,7 @@ vector<dataline> findlist(const vector<dataline>& lines)
     {
         if (line.kind == linekind::Fence)
         {
-            size_t first =
-                line.value.find_first_not_of(' ');
+            size_t first = line.value.find_first_not_of(' ');
 
             if (first == string::npos)
             {
@@ -402,22 +364,17 @@ vector<dataline> findlist(const vector<dataline>& lines)
 
             char symbol = line.value[first];
 
-            size_t end =
-                line.value.find_first_not_of(
-                    symbol,
-                    first);
+            size_t end = line.value.find_first_not_of(symbol, first);
 
             int length;
 
             if (end == string::npos)
             {
-                length = static_cast<int>(
-                    line.value.size() - first);
+                length = static_cast<int>(line.value.size() - first);
             }
             else
             {
-                length = static_cast<int>(
-                    end - first);
+                length = static_cast<int>(end - first);
             }
 
             string rest;
